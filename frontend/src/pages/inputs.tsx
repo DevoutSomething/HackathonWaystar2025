@@ -55,41 +55,43 @@ function SliderCard({
   return (
     <div
       ref={cardRef}
-      className={`border-2 rounded-lg transition-all ${
+      className={`rounded-xl transition-all duration-300 ${
         isExpanded
-          ? "border-orange-500 bg-orange-50"
-          : "border-gray-200 bg-white hover:border-gray-300"
+          ? "bg-gradient-to-br from-orange-50 to-orange-100/50 border-2 border-orange-400 shadow-xl shadow-orange-200/50"
+          : "bg-white border border-gray-200 shadow-md hover:shadow-lg hover:border-orange-300"
       }`}
     >
       {/* Collapsed View */}
       {!isExpanded && (
         <button
           onClick={onExpand}
-          className="w-full px-4 py-3 flex justify-between items-center text-left hover:bg-gray-50 transition-colors"
+          className="w-full px-5 py-4 flex justify-between items-center text-left hover:bg-gradient-to-r hover:from-gray-50 hover:to-orange-50/30 transition-all duration-200 rounded-xl"
         >
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-gray-700 truncate">
+            <div className="text-sm font-bold text-gray-800 truncate">
               {field.label}
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">
+            <div className="text-xs text-gray-500 mt-1 font-medium">
               Click to configure
             </div>
           </div>
-          <div className="flex items-center gap-2 ml-4">
-            <div className="text-lg font-bold text-orange-600 whitespace-nowrap">
-              {displayValue.toLocaleString()} {field.unit}
+          <div className="flex items-center gap-3 ml-4">
+            <div className="px-3 py-1.5 bg-orange-100 rounded-lg">
+              <span className="text-base font-bold text-orange-700 whitespace-nowrap">
+                {displayValue.toLocaleString()} {field.unit}
+              </span>
             </div>
             <svg
-              width="14"
-              height="14"
+              width="16"
+              height="16"
               viewBox="0 0 20 20"
               fill="none"
-              className="text-gray-400 flex-shrink-0"
+              className="text-gray-400 flex-shrink-0 transition-transform"
             >
               <path
                 d="M7 9l3 3 3-3"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -100,67 +102,79 @@ function SliderCard({
 
       {/* Expanded View */}
       {isExpanded && (
-        <div className="p-6 space-y-4">
-          <div className="flex justify-between items-center">
-            <Label
-              htmlFor={field.id}
-              className="text-sm font-semibold text-gray-700"
-            >
-              {field.label}
-            </Label>
+        <div className="p-7 space-y-5">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <Label
+                htmlFor={field.id}
+                className="text-base font-bold text-gray-800"
+              >
+                {field.label}
+              </Label>
+              <div className="text-xs text-gray-600 mt-1 font-medium">
+                {field.min.toLocaleString()} - {field.max.toLocaleString()}{" "}
+                {field.unit}
+              </div>
+            </div>
             <button
               onClick={onCollapse}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-500 hover:text-orange-600 hover:bg-orange-100 p-2 rounded-lg transition-all"
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M15 5L5 15M5 5l10 10"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                 />
               </svg>
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Input
-              type="number"
-              value={
-                editingValue !== undefined && editingValue !== ""
-                  ? editingValue
-                  : displayValue
-              }
-              onChange={(e) => onInputChange(field.id, e.target.value)}
-              onBlur={() =>
-                onInputBlur(field.id, field.min, field.max, field.logarithmic)
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.currentTarget.blur();
+          <div className="bg-white rounded-xl p-5 shadow-inner border border-orange-200">
+            <div className="flex items-center gap-4 mb-4">
+              <Input
+                type="number"
+                value={
+                  editingValue !== undefined && editingValue !== ""
+                    ? editingValue
+                    : displayValue
                 }
-              }}
-              step={field.step}
-              className="flex-1 text-center text-2xl font-bold text-orange-600 border-2 border-orange-300 focus:border-orange-500 h-14"
+                onChange={(e) => onInputChange(field.id, e.target.value)}
+                onBlur={() =>
+                  onInputBlur(field.id, field.min, field.max, field.logarithmic)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.currentTarget.blur();
+                  }
+                }}
+                step={field.step}
+                className="flex-1 text-center text-3xl font-black text-orange-600 border-2 border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 h-16 rounded-lg"
+              />
+              <span className="text-xl font-bold text-gray-700 min-w-[90px]">
+                {field.unit}
+              </span>
+            </div>
+
+            <Slider
+              id={field.id}
+              value={[value]}
+              onValueChange={(val) => onSliderChange(field.id, val)}
+              min={0}
+              max={100}
+              step={1}
+              className="cursor-pointer my-6"
             />
-            <span className="text-lg font-medium text-gray-600 min-w-[80px]">
-              {field.unit}
-            </span>
-          </div>
 
-          <Slider
-            id={field.id}
-            value={[value]}
-            onValueChange={(val) => onSliderChange(field.id, val)}
-            min={0}
-            max={100}
-            step={1}
-            className="cursor-pointer"
-          />
-
-          <div className="flex justify-between text-sm text-gray-500">
-            <span>{field.min.toLocaleString()}</span>
-            <span>{field.max.toLocaleString()}</span>
+            <div className="flex justify-between text-sm font-semibold text-gray-600 mt-2">
+              <span className="bg-gray-100 px-3 py-1 rounded-md">
+                {field.min.toLocaleString()}
+              </span>
+              <span className="bg-gray-100 px-3 py-1 rounded-md">
+                {field.max.toLocaleString()}
+              </span>
+            </div>
           </div>
         </div>
       )}
@@ -508,40 +522,40 @@ export default function Inputs() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-gray-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600">
-        <div className="max-w-7xl mx-auto px-8 py-12">
+      <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 shadow-xl">
+        <div className="max-w-7xl mx-auto px-8 py-14">
           <div className="flex justify-between items-start">
             <div className="space-y-4">
-              <div className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full">
-                <span className="text-white text-sm font-medium">
-                  Risk Assessment Platform
+              <div className="inline-block px-5 py-2 bg-white/25 backdrop-blur-md rounded-full border border-white/30 shadow-lg">
+                <span className="text-white text-sm font-bold tracking-wide">
+                  🎯 Risk Assessment Platform
                 </span>
               </div>
-              <h1 className="text-5xl font-bold text-white leading-tight">
+              <h1 className="text-6xl font-black text-white leading-tight tracking-tight">
                 Project Risk Calculator
               </h1>
-              <p className="text-orange-50 text-lg max-w-xl">
-                Adjust the parameters below to analyze your project's risk
-                profile and get actionable insights
+              <p className="text-orange-100 text-lg max-w-xl font-medium">
+                Configure your project parameters below to generate an accurate
+                risk assessment and actionable insights
               </p>
             </div>
             <Button
               size="lg"
-              className="bg-white text-orange-600 hover:bg-orange-50 font-semibold px-8 py-6 shadow-xl hover:shadow-2xl transition-all"
+              className="bg-white text-orange-600 hover:bg-orange-50 font-black px-14 py-8 text-xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 rounded-xl border-2 border-orange-200"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
+                width="28"
+                height="28"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="mr-2"
+                className="mr-3"
               >
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -554,17 +568,17 @@ export default function Inputs() {
 
       {/* Form Content */}
       <div className="max-w-7xl mx-auto px-8 py-16">
-        <Card className="shadow-2xl border border-gray-200 bg-white">
+        <Card className="shadow-2xl border-2 border-gray-200 bg-white rounded-2xl overflow-hidden">
           <CardContent className="p-12">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="mb-10 pb-8 border-b-2 border-gray-200">
+              <h2 className="text-3xl font-black text-gray-900 mb-3">
                 Project Metrics
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-base font-medium">
                 Configure your project parameters to calculate risk assessment
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 items-start">
               {sliderFields.map((field) => {
                 const value = stateValues[field.id];
                 const displayValue = field.logarithmic
@@ -591,28 +605,31 @@ export default function Inputs() {
             </div>
 
             {/* Calculate Risk Button */}
-            <div className="mt-16 pt-8 border-t border-gray-200">
-              <div className="flex justify-center">
+            <div className="mt-16 pt-10 border-t-2 border-gray-200">
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-gray-600 font-medium text-center">
+                  Ready to analyze your project?
+                </p>
                 <Button
                   size="lg"
                   onClick={() => {
                     console.log("All Form Data:", allFormData);
-                    // TODO: Send to backend
+                    window.location.href = "/dashboard";
                   }}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold px-20 py-7 text-xl shadow-2xl hover:shadow-3xl transition-all rounded-xl"
+                  className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-black px-24 py-8 text-2xl shadow-2xl hover:shadow-orange-300/50 hover:scale-105 transition-all duration-300 rounded-2xl border-2 border-orange-400"
                 >
                   Calculate Risk Score
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
+                    width="28"
+                    height="28"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="3"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="ml-3"
+                    className="ml-4"
                   >
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
