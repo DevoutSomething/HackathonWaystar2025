@@ -1,9 +1,172 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+
+// Individual slider card component with click-outside detection
+function SliderCard({
+  field,
+  value,
+  displayValue,
+  isExpanded,
+  onExpand,
+  onCollapse,
+  editingValue,
+  onInputChange,
+  onInputBlur,
+  onSliderChange,
+}: {
+  field: any;
+  value: number;
+  displayValue: number;
+  isExpanded: boolean;
+  onExpand: () => void;
+  onCollapse: () => void;
+  editingValue: string;
+  onInputChange: (fieldId: string, value: string) => void;
+  onInputBlur: (
+    fieldId: string,
+    min: number,
+    max: number,
+    logarithmic: boolean
+  ) => void;
+  onSliderChange: (fieldId: string, value: number[]) => void;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+        onCollapse();
+      }
+    };
+
+    if (isExpanded) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isExpanded, onCollapse]);
+
+  return (
+    <div
+      ref={cardRef}
+      className={`border-2 rounded-lg transition-all ${
+        isExpanded
+          ? "border-orange-500 bg-orange-50"
+          : "border-gray-200 bg-white hover:border-gray-300"
+      }`}
+    >
+      {/* Collapsed View */}
+      {!isExpanded && (
+        <button
+          onClick={onExpand}
+          className="w-full px-4 py-3 flex justify-between items-center text-left hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-gray-700 truncate">
+              {field.label}
+            </div>
+            <div className="text-xs text-gray-500 mt-0.5">
+              Click to configure
+            </div>
+          </div>
+          <div className="flex items-center gap-2 ml-4">
+            <div className="text-lg font-bold text-orange-600 whitespace-nowrap">
+              {displayValue.toLocaleString()} {field.unit}
+            </div>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 20 20"
+              fill="none"
+              className="text-gray-400 flex-shrink-0"
+            >
+              <path
+                d="M7 9l3 3 3-3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </button>
+      )}
+
+      {/* Expanded View */}
+      {isExpanded && (
+        <div className="p-6 space-y-4">
+          <div className="flex justify-between items-center">
+            <Label
+              htmlFor={field.id}
+              className="text-sm font-semibold text-gray-700"
+            >
+              {field.label}
+            </Label>
+            <button
+              onClick={onCollapse}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M15 5L5 15M5 5l10 10"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Input
+              type="number"
+              value={
+                editingValue !== undefined && editingValue !== ""
+                  ? editingValue
+                  : displayValue
+              }
+              onChange={(e) => onInputChange(field.id, e.target.value)}
+              onBlur={() =>
+                onInputBlur(field.id, field.min, field.max, field.logarithmic)
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+              }}
+              step={field.step}
+              className="flex-1 text-center text-2xl font-bold text-orange-600 border-2 border-orange-300 focus:border-orange-500 h-14"
+            />
+            <span className="text-lg font-medium text-gray-600 min-w-[80px]">
+              {field.unit}
+            </span>
+          </div>
+
+          <Slider
+            id={field.id}
+            value={[value]}
+            onValueChange={(val) => onSliderChange(field.id, val)}
+            min={0}
+            max={100}
+            step={1}
+            className="cursor-pointer"
+          />
+
+          <div className="flex justify-between text-sm text-gray-500">
+            <span>{field.min.toLocaleString()}</span>
+            <span>{field.max.toLocaleString()}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Inputs() {
   // Individual useState for each slider
@@ -46,6 +209,9 @@ export default function Inputs() {
   const [editingValues, setEditingValues] = useState<Record<string, string>>(
     {}
   );
+
+  // Track which slider is currently expanded
+  const [expandedSlider, setExpandedSlider] = useState<string | null>(null);
 
   // State setters map
   const stateSetters: Record<string, (value: number) => void> = {
@@ -398,69 +564,28 @@ export default function Inputs() {
                 Configure your project parameters to calculate risk assessment
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 items-start">
               {sliderFields.map((field) => {
                 const value = stateValues[field.id];
                 const displayValue = field.logarithmic
                   ? logScale(value, field.min, field.max, field.step)
                   : linearScale(value, field.min, field.max, field.step);
+                const isExpanded = expandedSlider === field.id;
 
                 return (
-                  <div key={field.id} className="space-y-3">
-                    <div className="flex justify-between items-center gap-4">
-                      <Label
-                        htmlFor={field.id}
-                        className="text-sm font-semibold text-gray-700"
-                      >
-                        {field.label}
-                      </Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          value={
-                            editingValues[field.id] !== undefined &&
-                            editingValues[field.id] !== ""
-                              ? editingValues[field.id]
-                              : displayValue
-                          }
-                          onChange={(e) =>
-                            handleInputChange(field.id, e.target.value)
-                          }
-                          onBlur={() =>
-                            handleInputBlur(
-                              field.id,
-                              field.min,
-                              field.max,
-                              field.logarithmic
-                            )
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.currentTarget.blur();
-                            }
-                          }}
-                          step={field.step}
-                          className="w-28 text-right font-bold text-orange-600 border-2 border-gray-200 focus:border-orange-500 h-9"
-                        />
-                        <span className="text-sm font-medium text-gray-600 min-w-[60px]">
-                          {field.unit}
-                        </span>
-                      </div>
-                    </div>
-                    <Slider
-                      id={field.id}
-                      value={[value]}
-                      onValueChange={(val) => handleSliderChange(field.id, val)}
-                      min={0}
-                      max={100}
-                      step={1}
-                      className="cursor-pointer"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>{field.min.toLocaleString()}</span>
-                      <span>{field.max.toLocaleString()}</span>
-                    </div>
-                  </div>
+                  <SliderCard
+                    key={field.id}
+                    field={field}
+                    value={value}
+                    displayValue={displayValue}
+                    isExpanded={isExpanded}
+                    onExpand={() => setExpandedSlider(field.id)}
+                    onCollapse={() => setExpandedSlider(null)}
+                    editingValue={editingValues[field.id]}
+                    onInputChange={handleInputChange}
+                    onInputBlur={handleInputBlur}
+                    onSliderChange={handleSliderChange}
+                  />
                 );
               })}
             </div>
