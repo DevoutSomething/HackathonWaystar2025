@@ -275,8 +275,8 @@ export default function Dashboard() {
                     x2="100%"
                     y2="0%"
                   >
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.6" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="1" />
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.7" />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
                   </linearGradient>
 
                   <linearGradient
@@ -286,8 +286,8 @@ export default function Dashboard() {
                     x2="100%"
                     y2="0%"
                   >
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.6" />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="1" />
+                    <stop offset="0%" stopColor="#eab308" stopOpacity="0.7" />
+                    <stop offset="100%" stopColor="#eab308" stopOpacity="1" />
                   </linearGradient>
 
                   <linearGradient
@@ -297,18 +297,7 @@ export default function Dashboard() {
                     x2="100%"
                     y2="0%"
                   >
-                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.6" />
-                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="1" />
-                  </linearGradient>
-
-                  <linearGradient
-                    id="extremeGrad"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="0%"
-                  >
-                    <stop offset="0%" stopColor="#ef4444" stopOpacity="0.6" />
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity="0.7" />
                     <stop offset="100%" stopColor="#ef4444" stopOpacity="1" />
                   </linearGradient>
 
@@ -339,57 +328,35 @@ export default function Dashboard() {
                 <g transform="translate(225, 210)">
                   {/* Background dark track */}
                   <path
-                    d="M -155,0 A 155,155 0 0,1 155,0"
-                    fill="none"
-                    stroke="#0a0a0a"
-                    strokeWidth="32"
-                    strokeLinecap="round"
+                    d="M -155,0 A 155,155 0 0,1 155,0 L 130,0 A 130,130 0 0,0 -130,0 Z"
+                    fill="#0a0a0a"
                   />
 
-                  {/* Low Risk - Green (0-25%) */}
+                  {/* Low Risk - White (0-33%) - Filled segment */}
                   <path
-                    d="M -150,0 A 150,150 0 0,1 -106,-106"
-                    fill="none"
-                    stroke="url(#lowGrad)"
-                    strokeWidth="24"
-                    strokeLinecap="round"
+                    d="M -150,0 A 150,150 0 0,1 -75,-130 L -65,-112.5 A 130,130 0 0,0 -130,0 Z"
+                    fill="url(#lowGrad)"
                     filter="url(#glow)"
                   />
 
-                  {/* Moderate Risk - Blue (25-50%) */}
+                  {/* Moderate Risk - Yellow (33-66%) - Filled segment */}
                   <path
-                    d="M -106,-106 A 150,150 0 0,1 0,-150"
-                    fill="none"
-                    stroke="url(#modGrad)"
-                    strokeWidth="24"
-                    strokeLinecap="round"
+                    d="M -75,-130 A 150,150 0 0,1 75,-130 L 65,-112.5 A 130,130 0 0,0 -65,-112.5 Z"
+                    fill="url(#modGrad)"
                     filter="url(#glow)"
                   />
 
-                  {/* High Risk - Orange (50-75%) */}
+                  {/* High Risk - Red (66-100%) - Filled segment */}
                   <path
-                    d="M 0,-150 A 150,150 0 0,1 106,-106"
-                    fill="none"
-                    stroke="url(#highGrad)"
-                    strokeWidth="24"
-                    strokeLinecap="round"
-                    filter="url(#glow)"
-                  />
-
-                  {/* Extreme Risk - Red (75-100%) */}
-                  <path
-                    d="M 106,-106 A 150,150 0 0,1 150,0"
-                    fill="none"
-                    stroke="url(#extremeGrad)"
-                    strokeWidth="24"
-                    strokeLinecap="round"
+                    d="M 75,-130 A 150,150 0 0,1 150,0 L 130,0 A 130,130 0 0,0 65,-112.5 Z"
+                    fill="url(#highGrad)"
                     filter="url(#glow)"
                   />
 
                   {/* Tick marks */}
-                  {Array.from({ length: 11 }).map((_, i) => {
-                    const angle = -180 + i * 18;
-                    const isMajor = i % 5 === 0;
+                  {Array.from({ length: 13 }).map((_, i) => {
+                    const angle = -180 + i * 15;
+                    const isMajor = i % 4 === 0;
                     const length = isMajor ? 15 : 8;
                     const width = isMajor ? 2 : 1;
                     const rad = (angle * Math.PI) / 180;
@@ -405,7 +372,7 @@ export default function Dashboard() {
                         y1={y1}
                         x2={x2}
                         y2={y2}
-                        stroke="#333"
+                        stroke="#444"
                         strokeWidth={width}
                         strokeLinecap="round"
                       />
@@ -413,7 +380,7 @@ export default function Dashboard() {
                   })}
 
                   {/* Needle */}
-                  <g transform={`rotate(${mockData.mean_prob * 180 - 180})`}>
+                  <g transform={`rotate(${(mockData.mean_prob - 0.5) * 180})`}>
                     <path
                       d="M -2,8 L -1,-130 L 0,-135 L 1,-130 L 2,8 Z"
                       fill="url(#needleGrad)"
@@ -461,75 +428,64 @@ export default function Dashboard() {
                   {/* Labels positioned correctly along arc */}
                   <text
                     x="-128"
-                    y="20"
-                    fill="#10b981"
-                    fontSize="11"
+                    y="15"
+                    fill="#ffffff"
+                    fontSize="13"
                     fontWeight="700"
                     textAnchor="middle"
-                    letterSpacing="1"
+                    letterSpacing="1.5"
                   >
                     LOW
                   </text>
                   <text
-                    x="-75"
-                    y="-115"
-                    fill="#3b82f6"
-                    fontSize="11"
+                    x="0"
+                    y="-152"
+                    fill="#eab308"
+                    fontSize="13"
                     fontWeight="700"
                     textAnchor="middle"
-                    letterSpacing="0.5"
+                    letterSpacing="1.5"
                   >
                     MODERATE
                   </text>
                   <text
-                    x="75"
-                    y="-115"
-                    fill="#f59e0b"
-                    fontSize="11"
+                    x="128"
+                    y="15"
+                    fill="#ef4444"
+                    fontSize="13"
                     fontWeight="700"
                     textAnchor="middle"
-                    letterSpacing="1"
+                    letterSpacing="1.5"
                   >
                     HIGH
-                  </text>
-                  <text
-                    x="128"
-                    y="20"
-                    fill="#ef4444"
-                    fontSize="11"
-                    fontWeight="700"
-                    textAnchor="middle"
-                    letterSpacing="0.5"
-                  >
-                    EXTREME
                   </text>
 
                   {/* Percentage markers */}
                   <text
-                    x="-170"
+                    x="-165"
                     y="8"
-                    fill="#555"
-                    fontSize="10"
-                    fontWeight="500"
+                    fill="#666"
+                    fontSize="11"
+                    fontWeight="600"
                   >
                     0%
                   </text>
                   <text
                     x="0"
-                    y="-168"
-                    fill="#555"
-                    fontSize="10"
-                    fontWeight="500"
+                    y="-165"
+                    fill="#666"
+                    fontSize="11"
+                    fontWeight="600"
                     textAnchor="middle"
                   >
                     50%
                   </text>
                   <text
-                    x="170"
+                    x="165"
                     y="8"
-                    fill="#555"
-                    fontSize="10"
-                    fontWeight="500"
+                    fill="#666"
+                    fontSize="11"
+                    fontWeight="600"
                     textAnchor="end"
                   >
                     100%
