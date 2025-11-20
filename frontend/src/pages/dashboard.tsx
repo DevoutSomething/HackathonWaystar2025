@@ -23,8 +23,52 @@ export default function Dashboard() {
         Math.exp(-Math.pow((i / 100 - 0.72) / 0.15, 2) / 2) /
         (0.15 * Math.sqrt(2 * Math.PI)),
     })),
-    risk_category: "High Risk",
   };
+
+  // Calculate risk category dynamically based on probability
+  const getRiskCategory = (prob: number): string => {
+    if (prob < 0.33) return "Low Risk";
+    if (prob < 0.66) return "Moderate Risk";
+    return "High Risk";
+  };
+
+  // Get colors for risk category badge
+  const getRiskColors = (prob: number) => {
+    if (prob < 0.33) {
+      return {
+        bg: "from-gray-500/20 to-gray-400/20",
+        border: "border-gray-400/40",
+        dot: "bg-gray-400",
+        dotShadow: "shadow-gray-400/50",
+        text: "text-gray-300",
+        percentGradient: "from-gray-300 via-gray-400 to-gray-500",
+        glowBg: "from-gray-500/20 to-gray-400/20",
+      };
+    }
+    if (prob < 0.66) {
+      return {
+        bg: "from-yellow-500/20 to-yellow-400/20",
+        border: "border-yellow-500/40",
+        dot: "bg-yellow-500",
+        dotShadow: "shadow-yellow-500/50",
+        text: "text-yellow-400",
+        percentGradient: "from-yellow-300 via-yellow-500 to-yellow-600",
+        glowBg: "from-yellow-500/20 to-yellow-400/20",
+      };
+    }
+    return {
+      bg: "from-orange-500/20 to-red-500/20",
+      border: "border-red-500/40",
+      dot: "bg-red-500",
+      dotShadow: "shadow-red-500/50",
+      text: "text-red-400",
+      percentGradient: "from-orange-400 via-red-500 to-red-600",
+      glowBg: "from-orange-500/20 to-red-500/20",
+    };
+  };
+
+  const riskCategory = getRiskCategory(mockData.mean_prob);
+  const riskColors = getRiskColors(mockData.mean_prob);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
@@ -496,18 +540,28 @@ export default function Dashboard() {
               {/* Risk percentage display */}
               <div className="mt-8 text-center">
                 <div className="relative inline-block">
-                  <div className="text-7xl font-bold bg-gradient-to-br from-orange-400 via-red-500 to-red-600 bg-clip-text text-transparent mb-3 tracking-tight">
+                  <div
+                    className={`text-7xl font-bold bg-gradient-to-br ${riskColors.percentGradient} bg-clip-text text-transparent mb-3 tracking-tight`}
+                  >
                     {Math.round(mockData.mean_prob * 100)}%
                   </div>
-                  <div className="absolute -inset-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 blur-2xl -z-10 rounded-full" />
+                  <div
+                    className={`absolute -inset-4 bg-gradient-to-r ${riskColors.glowBg} blur-2xl -z-10 rounded-full`}
+                  />
                 </div>
                 <div className="text-sm text-gray-500 uppercase tracking-wider mb-6 font-semibold">
                   Probability of Delay
                 </div>
-                <div className="inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-orange-500/20 to-red-500/20 border-2 border-red-500/40 rounded-full backdrop-blur-sm shadow-lg">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50" />
-                  <span className="text-red-400 font-bold text-base tracking-wider">
-                    {mockData.risk_category.toUpperCase()}
+                <div
+                  className={`inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r ${riskColors.bg} border-2 ${riskColors.border} rounded-full backdrop-blur-sm shadow-lg`}
+                >
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full ${riskColors.dot} animate-pulse shadow-lg ${riskColors.dotShadow}`}
+                  />
+                  <span
+                    className={`${riskColors.text} font-bold text-base tracking-wider`}
+                  >
+                    {riskCategory.toUpperCase()}
                   </span>
                 </div>
               </div>
