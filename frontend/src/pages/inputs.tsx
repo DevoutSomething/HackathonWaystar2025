@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import CallAndRecieveInput from "@/helpers/CallAndRecieveInput";
+import Sidebar from "@/components/Sidebar";
 
 // Individual slider card component with click-outside detection
 function SliderCard({
@@ -186,7 +187,7 @@ function SliderCard({
 
 export default function Inputs() {
   const navigate = useNavigate();
-  
+
   // Individual useState for each slider
   const [total_project_members, setTotalProjectMembers] = useState(50);
   const [total_project_stories, setTotalProjectStories] = useState(50);
@@ -374,21 +375,24 @@ export default function Inputs() {
 
   const handleLinkWithJira = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/jira", {
+      const response = await fetch("http://localhost:5001/api/jira", {
         method: "GET",
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const jiraData = await response.json();
-      
+
+      // Store jira data in localStorage for chatbot access
+      localStorage.setItem("jiraData", JSON.stringify(jiraData));
+
       // Set the project name if available
       if (jiraData.project_name) {
         setProjectName(jiraData.project_name);
       }
-      
+
       // Map the jira data to slider positions for each field
       sliderFields.forEach((field) => {
         const jiraValue = jiraData[field.id];
@@ -397,15 +401,17 @@ export default function Inputs() {
           const sliderPosition = field.logarithmic
             ? inverseLogScale(jiraValue, field.min, field.max)
             : inverseLinearScale(jiraValue, field.min, field.max);
-          
+
           stateSetters[field.id](sliderPosition);
         }
       });
-      
+
       console.log("Successfully loaded Jira data:", jiraData);
     } catch (error) {
       console.error("Error fetching Jira data:", error);
-      alert("Failed to load Jira data. Make sure the backend server is running.");
+      alert(
+        "Failed to load Jira data. Make sure the backend server is running."
+      );
     }
   };
 
@@ -566,150 +572,172 @@ export default function Inputs() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-gray-100">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 shadow-xl">
-        <div className="max-w-7xl mx-auto px-8 py-14">
-          <div className="flex justify-between items-start">
-            <div className="space-y-4">
-              <div className="inline-block px-5 py-2 bg-white/25 backdrop-blur-md rounded-full border border-white/30 shadow-lg">
-                <span className="text-white text-sm font-bold tracking-wide">
-                  🎯 Risk Assessment Platform
-                </span>
+    <>
+      <Sidebar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-gray-100 ml-64">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 shadow-xl">
+          <div className="max-w-7xl mx-auto px-8 py-14">
+            <div className="flex justify-between items-start">
+              <div className="space-y-4">
+                <div className="inline-block px-5 py-2 bg-white/25 backdrop-blur-md rounded-full border border-white/30 shadow-lg">
+                  <span className="text-white text-sm font-bold tracking-wide">
+                    🎯 Risk Assessment Platform
+                  </span>
+                </div>
+                <h1 className="text-6xl font-black text-white leading-tight tracking-tight">
+                  Project Risk Calculator
+                </h1>
+                <p className="text-orange-100 text-lg max-w-xl font-medium">
+                  Configure your project parameters below to generate an
+                  accurate risk assessment and actionable insights
+                </p>
               </div>
-              <h1 className="text-6xl font-black text-white leading-tight tracking-tight">
-                Project Risk Calculator
-              </h1>
-              <p className="text-orange-100 text-lg max-w-xl font-medium">
-                Configure your project parameters below to generate an accurate
-                risk assessment and actionable insights
-              </p>
-            </div>
-            <Button
-              size="lg"
-              onClick={handleLinkWithJira}
-              className="bg-white text-orange-600 hover:bg-orange-50 font-black px-14 py-8 text-xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 rounded-xl border-2 border-orange-200"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-3"
+              <Button
+                size="lg"
+                onClick={handleLinkWithJira}
+                className="bg-white text-orange-600 hover:bg-orange-50 font-black px-14 py-8 text-xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 rounded-xl border-2 border-orange-200"
               >
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-              </svg>
-              Link with Jira
-            </Button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-3"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+                Link with Jira
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Form Content */}
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <Card className="shadow-2xl border-2 border-gray-200 bg-white rounded-2xl overflow-hidden">
-          <CardContent className="p-12">
-            <div className="mb-10 pb-8 border-b-2 border-gray-200">
-              <h2 className="text-3xl font-black text-gray-900 mb-3">
-                {projectName} Metrics
-              </h2>
-              <p className="text-gray-600 text-base font-medium">
-                Configure your project parameters to calculate risk assessment
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 items-start">
-              {sliderFields.map((field) => {
-                const value = stateValues[field.id];
-                const displayValue = field.logarithmic
-                  ? logScale(value, field.min, field.max, field.step)
-                  : linearScale(value, field.min, field.max, field.step);
-                const isExpanded = expandedSlider === field.id;
-
-                return (
-                  <SliderCard
-                    key={field.id}
-                    field={field}
-                    value={value}
-                    displayValue={displayValue}
-                    isExpanded={isExpanded}
-                    onExpand={() => setExpandedSlider(field.id)}
-                    onCollapse={() => setExpandedSlider(null)}
-                    editingValue={editingValues[field.id]}
-                    onInputChange={handleInputChange}
-                    onInputBlur={handleInputBlur}
-                    onSliderChange={handleSliderChange}
-                  />
-                );
-              })}
-            </div>
-
-            {/* Calculate Risk Button */}
-            <div className="mt-16 pt-10 border-t-2 border-gray-200">
-              <div className="flex flex-col items-center gap-4">
-                <p className="text-gray-600 font-medium text-center">
-                  Ready to analyze your project?
+        {/* Form Content */}
+        <div className="max-w-7xl mx-auto px-8 py-16">
+          <Card className="shadow-2xl border-2 border-gray-200 bg-white rounded-2xl overflow-hidden">
+            <CardContent className="p-12">
+              <div className="mb-10 pb-8 border-b-2 border-gray-200">
+                <h2 className="text-3xl font-black text-gray-900 mb-3">
+                  {projectName} Metrics
+                </h2>
+                <p className="text-gray-600 text-base font-medium">
+                  Configure your project parameters to calculate risk assessment
                 </p>
-                <Button
-                  size="lg"
-                  onClick={async () => {
-                    try {
-                      console.log("Sending Form Data:", allFormData);
-                      
-                      // Convert slider values to actual values before sending
-                      const actualFormData: Record<string, number> = {};
-                      sliderFields.forEach((field) => {
-                        const value = stateValues[field.id];
-                        actualFormData[field.id] = field.logarithmic
-                          ? logScale(value, field.min, field.max, field.step)
-                          : linearScale(value, field.min, field.max, field.step);
-                      });
-                      
-                      console.log("Actual Form Data:", actualFormData);
-                      const result = await CallAndRecieveInput(actualFormData);
-                      console.log("Received Result:", result);
-                      
-                      // Navigate to dashboard with the result using React Router state
-                      navigate("/dashboard", { 
-                        state: { 
-                          result: result,
-                          projectName: projectName
-                        } 
-                      });
-                    } catch (error) {
-                      console.error("Error calculating risk:", error);
-                      alert("Failed to calculate risk. Please ensure the backend server is running.");
-                    }
-                  }}
-                  className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-black px-24 py-8 text-2xl shadow-2xl hover:shadow-orange-300/50 hover:scale-105 transition-all duration-300 rounded-2xl border-2 border-orange-400"
-                >
-                  Calculate Risk Score
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="28"
-                    height="28"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="ml-4"
-                  >
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                  </svg>
-                </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 items-start">
+                {sliderFields.map((field) => {
+                  const value = stateValues[field.id];
+                  const displayValue = field.logarithmic
+                    ? logScale(value, field.min, field.max, field.step)
+                    : linearScale(value, field.min, field.max, field.step);
+                  const isExpanded = expandedSlider === field.id;
+
+                  return (
+                    <SliderCard
+                      key={field.id}
+                      field={field}
+                      value={value}
+                      displayValue={displayValue}
+                      isExpanded={isExpanded}
+                      onExpand={() => setExpandedSlider(field.id)}
+                      onCollapse={() => setExpandedSlider(null)}
+                      editingValue={editingValues[field.id]}
+                      onInputChange={handleInputChange}
+                      onInputBlur={handleInputBlur}
+                      onSliderChange={handleSliderChange}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Calculate Risk Button */}
+              <div className="mt-16 pt-10 border-t-2 border-gray-200">
+                <div className="flex flex-col items-center gap-4">
+                  <p className="text-gray-600 font-medium text-center">
+                    Ready to analyze your project?
+                  </p>
+                  <Button
+                    size="lg"
+                    onClick={async () => {
+                      try {
+                        console.log("Sending Form Data:", allFormData);
+
+                        // Convert slider values to actual values before sending
+                        const actualFormData: Record<string, number> = {};
+                        sliderFields.forEach((field) => {
+                          const value = stateValues[field.id];
+                          actualFormData[field.id] = field.logarithmic
+                            ? logScale(value, field.min, field.max, field.step)
+                            : linearScale(
+                                value,
+                                field.min,
+                                field.max,
+                                field.step
+                              );
+                        });
+
+                        console.log("Actual Form Data:", actualFormData);
+                        const result = await CallAndRecieveInput(
+                          actualFormData
+                        );
+                        console.log("Received Result:", result);
+
+                        // Store both the input data and risk assessment in localStorage for chatbot access
+                        localStorage.setItem(
+                          "formInputs",
+                          JSON.stringify(actualFormData)
+                        );
+                        localStorage.setItem(
+                          "riskAssessment",
+                          JSON.stringify(result)
+                        );
+
+                        // Navigate to dashboard with the result using React Router state
+                        navigate("/dashboard", {
+                          state: {
+                            result: result,
+                            projectName: projectName,
+                          },
+                        });
+                      } catch (error) {
+                        console.error("Error calculating risk:", error);
+                        alert(
+                          "Failed to calculate risk. Please ensure the backend server is running."
+                        );
+                      }
+                    }}
+                    className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-black px-24 py-8 text-2xl shadow-2xl hover:shadow-orange-300/50 hover:scale-105 transition-all duration-300 rounded-2xl border-2 border-orange-400"
+                  >
+                    Calculate Risk Score
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="ml-4"
+                    >
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
