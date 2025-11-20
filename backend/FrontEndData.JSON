@@ -1,0 +1,19 @@
+{
+    "total_project_members": 0,
+    "total_project_stories": 0,
+    "total_story_points": 0,
+    "number_of_low_priority_stories": 0,
+    "number_of_medium_priority_stories": 0,
+    "number_of_high_priority_stories": 0,
+    "number_of_stories_in_progress": 0,
+    "number_of_stories_completed": 0,
+    "number_of_stories_todo": 0,
+    "number_of_stories_in_review": 0,
+    "number_of_different_teams": 0,
+    "number_of_testing_stories": 0,
+    "estimated_project_duration_in_days": 0,
+    "number_of_epics": 0,
+    "average_seniority_level_per_engineer_in_years": 0.0,
+    "average_time_of_story_completion_in_hours": 0.0,
+    "average_time_of_stories_in_progress_in_hours": 0.0
+}
