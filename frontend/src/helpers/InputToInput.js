@@ -1,12 +1,10 @@
 export default function InputToInput(input) {
-    // Calculate derived fields
     const averageMembersPerTeam = input.total_project_members / input.number_of_different_teams;
     const averageStoryPoints = input.total_story_points / input.total_project_stories;
     const averageStoryPointsPerEpic = input.total_story_points / input.number_of_epics;
     const averageStoryPointsPerEngineer = input.total_story_points / input.total_project_members;
     const averageSeniorityLevelInDays = input.average_seniority_level_per_engineer_in_years * 365;
     
-    // Build the neural network input object
     return {
         total_project_members: input.total_project_members,
         average_members_per_team: averageMembersPerTeam,
