@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import CallAndRecieveInput from "@/helpers/CallAndRecieveInput";
 
 // Individual slider card component with click-outside detection
 function SliderCard({
@@ -183,6 +185,8 @@ function SliderCard({
 }
 
 export default function Inputs() {
+  const navigate = useNavigate();
+  
   // Individual useState for each slider
   const [total_project_members, setTotalProjectMembers] = useState(50);
   const [total_project_stories, setTotalProjectStories] = useState(50);
@@ -226,6 +230,9 @@ export default function Inputs() {
 
   // Track which slider is currently expanded
   const [expandedSlider, setExpandedSlider] = useState<string | null>(null);
+
+  // Project name from Jira
+  const [projectName, setProjectName] = useState<string>("Project");
 
   // State setters map
   const stateSetters: Record<string, (value: number) => void> = {
@@ -363,6 +370,43 @@ export default function Inputs() {
       }
     }
     setEditingValues((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const handleLinkWithJira = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/jira", {
+        method: "GET",
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const jiraData = await response.json();
+      
+      // Set the project name if available
+      if (jiraData.project_name) {
+        setProjectName(jiraData.project_name);
+      }
+      
+      // Map the jira data to slider positions for each field
+      sliderFields.forEach((field) => {
+        const jiraValue = jiraData[field.id];
+        if (jiraValue !== undefined && stateSetters[field.id]) {
+          // Convert the real value to slider position
+          const sliderPosition = field.logarithmic
+            ? inverseLogScale(jiraValue, field.min, field.max)
+            : inverseLinearScale(jiraValue, field.min, field.max);
+          
+          stateSetters[field.id](sliderPosition);
+        }
+      });
+      
+      console.log("Successfully loaded Jira data:", jiraData);
+    } catch (error) {
+      console.error("Error fetching Jira data:", error);
+      alert("Failed to load Jira data. Make sure the backend server is running.");
+    }
   };
 
   const sliderFields = [
@@ -543,6 +587,7 @@ export default function Inputs() {
             </div>
             <Button
               size="lg"
+              onClick={handleLinkWithJira}
               className="bg-white text-orange-600 hover:bg-orange-50 font-black px-14 py-8 text-xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 rounded-xl border-2 border-orange-200"
             >
               <svg
@@ -572,7 +617,7 @@ export default function Inputs() {
           <CardContent className="p-12">
             <div className="mb-10 pb-8 border-b-2 border-gray-200">
               <h2 className="text-3xl font-black text-gray-900 mb-3">
-                Project Metrics
+                {projectName} Metrics
               </h2>
               <p className="text-gray-600 text-base font-medium">
                 Configure your project parameters to calculate risk assessment
@@ -612,9 +657,34 @@ export default function Inputs() {
                 </p>
                 <Button
                   size="lg"
-                  onClick={() => {
-                    console.log("All Form Data:", allFormData);
-                    window.location.href = "/dashboard";
+                  onClick={async () => {
+                    try {
+                      console.log("Sending Form Data:", allFormData);
+                      
+                      // Convert slider values to actual values before sending
+                      const actualFormData: Record<string, number> = {};
+                      sliderFields.forEach((field) => {
+                        const value = stateValues[field.id];
+                        actualFormData[field.id] = field.logarithmic
+                          ? logScale(value, field.min, field.max, field.step)
+                          : linearScale(value, field.min, field.max, field.step);
+                      });
+                      
+                      console.log("Actual Form Data:", actualFormData);
+                      const result = await CallAndRecieveInput(actualFormData);
+                      console.log("Received Result:", result);
+                      
+                      // Navigate to dashboard with the result using React Router state
+                      navigate("/dashboard", { 
+                        state: { 
+                          result: result,
+                          projectName: projectName
+                        } 
+                      });
+                    } catch (error) {
+                      console.error("Error calculating risk:", error);
+                      alert("Failed to calculate risk. Please ensure the backend server is running.");
+                    }
                   }}
                   className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-black px-24 py-8 text-2xl shadow-2xl hover:shadow-orange-300/50 hover:scale-105 transition-all duration-300 rounded-2xl border-2 border-orange-400"
                 >

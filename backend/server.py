@@ -59,6 +59,7 @@
 # backend/server.py
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
 import pandas as pd
 import torch
@@ -71,6 +72,7 @@ from risk_engine_core import (
 )
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # ================================
 # 1) Train RiskEngine at startup
@@ -209,7 +211,8 @@ def jira_object():
     """
     Example payload the frontend can use as a template for the input form.
     """
-    return jsonify(return_jira_object()), 200
+    print("Jira object requested", return_jira_object())
+    return jsonify(return_jira_object())
 
 
 def return_jira_object():

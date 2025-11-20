@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocation } from "react-router-dom";
 import {
   AreaChart,
   Area,
@@ -11,7 +12,14 @@ import {
 } from "recharts";
 
 export default function Dashboard() {
-  // Mock data - will be replaced with actual backend response
+  const location = useLocation();
+  const { result, projectName } = location.state || {};
+  
+  console.log("Dashboard - Location state:", location.state);
+  console.log("Dashboard - Result:", result);
+  console.log("Dashboard - Project Name:", projectName);
+
+  // Mock data - will be used if no real data is available
   const mockData = {
     mean_prob: 0.72,
     std: 0.15,
@@ -24,6 +32,24 @@ export default function Dashboard() {
         (0.15 * Math.sqrt(2 * Math.PI)),
     })),
   };
+
+  // Use real data if available, otherwise use mock data
+  const displayData = result ? {
+    mean_prob: result.mean_prob || result.mean_probability || 0.72,
+    std: result.std || result.standard_deviation_of_probability || 0.15,
+    ci_5: result.ci_5 || 0.53,
+    ci_95: result.ci_95 || 0.87,
+    all_samples: result.all_samples && Array.isArray(result.all_samples) ? 
+      Array.from({ length: 100 }, (_, i) => {
+        const prob = i / 100;
+        const mean = result.mean_prob || result.mean_probability || 0.72;
+        const stdDev = result.std || result.standard_deviation_of_probability || 0.15;
+        return {
+          probability: prob,
+          density: Math.exp(-Math.pow((prob - mean) / stdDev, 2) / 2) / (stdDev * Math.sqrt(2 * Math.PI))
+        };
+      }) : mockData.all_samples,
+  } : mockData;
 
   // Calculate risk category dynamically based on probability
   const getRiskCategory = (prob: number): string => {
@@ -67,8 +93,8 @@ export default function Dashboard() {
     };
   };
 
-  const riskCategory = getRiskCategory(mockData.mean_prob);
-  const riskColors = getRiskColors(mockData.mean_prob);
+  const riskCategory = getRiskCategory(displayData.mean_prob);
+  const riskColors = getRiskColors(displayData.mean_prob);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
@@ -77,7 +103,9 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-8 py-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-white">Risk Assessment</h1>
+              <h1 className="text-3xl font-bold text-white">
+                {projectName ? `${projectName} - Risk Assessment` : "Risk Assessment"}
+              </h1>
               <p className="text-gray-400 mt-1">
                 Project delay probability analysis
               </p>
@@ -118,7 +146,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="text-4xl font-bold text-white mb-2">
-                {(mockData.mean_prob * 100).toFixed(0)}%
+                {(displayData.mean_prob * 100).toFixed(0)}%
               </div>
               <div className="text-gray-400 text-sm">
                 Mean probability of delay
@@ -133,11 +161,11 @@ export default function Dashboard() {
                   Uncertainty
                 </div>
                 <div className="flex items-center gap-1 text-yellow-500 text-sm font-medium">
-                  ±{(mockData.std * 100).toFixed(0)}%
+                  ±{(displayData.std * 100).toFixed(0)}%
                 </div>
               </div>
               <div className="text-4xl font-bold text-white mb-2">
-                {(mockData.std * 100).toFixed(1)}%
+                {(displayData.std * 100).toFixed(1)}%
               </div>
               <div className="text-gray-400 text-sm">Standard deviation</div>
             </CardContent>
@@ -154,7 +182,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="text-4xl font-bold text-white mb-2">
-                {(mockData.ci_5 * 100).toFixed(0)}%
+                {(displayData.ci_5 * 100).toFixed(0)}%
               </div>
               <div className="text-gray-400 text-sm">
                 Credible interval start
@@ -173,7 +201,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="text-4xl font-bold text-white mb-2">
-                {(mockData.ci_95 * 100).toFixed(0)}%
+                {(displayData.ci_95 * 100).toFixed(0)}%
               </div>
               <div className="text-gray-400 text-sm">Credible interval end</div>
             </CardContent>
@@ -189,8 +217,8 @@ export default function Dashboard() {
                   Probability Distribution
                 </CardTitle>
                 <p className="text-gray-400 text-sm mt-1">
-                  90% credible interval: {(mockData.ci_5 * 100).toFixed(0)}% -{" "}
-                  {(mockData.ci_95 * 100).toFixed(0)}%
+                  90% credible interval: {(displayData.ci_5 * 100).toFixed(0)}% -{" "}
+                  {(displayData.ci_95 * 100).toFixed(0)}%
                 </p>
               </div>
               <div className="flex gap-2">
@@ -208,7 +236,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <ResponsiveContainer width="100%" height={350}>
-              <AreaChart data={mockData.all_samples}>
+              <AreaChart data={displayData.all_samples}>
                 <defs>
                   <linearGradient id="colorDensity" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />
@@ -244,8 +272,8 @@ export default function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey={(d) =>
-                    d.probability >= mockData.ci_5 &&
-                    d.probability <= mockData.ci_95
+                    d.probability >= displayData.ci_5 &&
+                    d.probability <= displayData.ci_95
                       ? d.density
                       : 0
                   }
@@ -262,12 +290,12 @@ export default function Dashboard() {
                 />
                 {/* Mean line */}
                 <ReferenceLine
-                  x={mockData.mean_prob}
+                  x={displayData.mean_prob}
                   stroke="#fff"
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   label={{
-                    value: `Mean: ${(mockData.mean_prob * 100).toFixed(1)}%`,
+                    value: `Mean: ${(displayData.mean_prob * 100).toFixed(1)}%`,
                     position: "top",
                     fill: "#fff",
                     fontWeight: "bold",
@@ -275,13 +303,13 @@ export default function Dashboard() {
                 />
                 {/* CI boundaries */}
                 <ReferenceLine
-                  x={mockData.ci_5}
+                  x={displayData.ci_5}
                   stroke="#666"
                   strokeWidth={1}
                   strokeDasharray="3 3"
                 />
                 <ReferenceLine
-                  x={mockData.ci_95}
+                  x={displayData.ci_95}
                   stroke="#666"
                   strokeWidth={1}
                   strokeDasharray="3 3"
@@ -424,7 +452,7 @@ export default function Dashboard() {
                   })}
 
                   {/* Needle */}
-                  <g transform={`rotate(${(mockData.mean_prob - 0.5) * 180})`}>
+                  <g transform={`rotate(${(displayData.mean_prob - 0.5) * 180})`}>
                     <path
                       d="M -2,8 L -1,-130 L 0,-135 L 1,-130 L 2,8 Z"
                       fill="url(#needleGrad)"
@@ -543,7 +571,7 @@ export default function Dashboard() {
                   <div
                     className={`text-7xl font-bold bg-gradient-to-br ${riskColors.percentGradient} bg-clip-text text-transparent mb-3 tracking-tight`}
                   >
-                    {Math.round(mockData.mean_prob * 100)}%
+                    {Math.round(displayData.mean_prob * 100)}%
                   </div>
                   <div
                     className={`absolute -inset-4 bg-gradient-to-r ${riskColors.glowBg} blur-2xl -z-10 rounded-full`}

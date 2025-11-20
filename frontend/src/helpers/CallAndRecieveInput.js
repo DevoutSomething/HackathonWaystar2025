@@ -1,12 +1,13 @@
-import dotenv from 'dotenv';
 import InputToInput from './InputToInput';
 
-dotenv.config();
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000/";
+const BACKEND_URL = "http://localhost:5000/";
 
 export default async function CallAndRecieveInput(frontendInput) {
+    console.log("CallAndRecieveInput - Input received:", frontendInput);
     const neuralNetworkInput = InputToInput(frontendInput);
+    console.log("CallAndRecieveInput - Converted to neural network input:", neuralNetworkInput);
+    
     try {
         const response = await fetch(`${BACKEND_URL}api/endpoint`, {
             method: 'POST',
@@ -21,6 +22,7 @@ export default async function CallAndRecieveInput(frontendInput) {
         }
 
         const data = await response.json();
+        console.log("CallAndRecieveInput - Response from backend:", data);
         return data;
     } catch (error) {
         console.error('Error calling API:', error);
