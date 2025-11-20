@@ -137,12 +137,8 @@ function SliderCard({
           <div className="bg-white rounded-xl p-5 shadow-inner border border-orange-200">
             <div className="flex items-center gap-4 mb-4">
               <Input
-                type="number"
-                value={
-                  editingValue !== undefined && editingValue !== ""
-                    ? editingValue
-                    : displayValue
-                }
+                type="text"
+                value={editingValue !== undefined ? editingValue : displayValue}
                 onChange={(e) => onInputChange(field.id, e.target.value)}
                 onBlur={() =>
                   onInputBlur(field.id, field.min, field.max, field.logarithmic)
@@ -152,7 +148,6 @@ function SliderCard({
                     e.currentTarget.blur();
                   }
                 }}
-                step={field.step}
                 className="flex-1 text-center text-3xl font-black text-orange-600 border-2 border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 h-16 rounded-lg"
               />
               <span className="text-xl font-bold text-gray-700 min-w-[90px]">
