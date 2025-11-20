@@ -6,29 +6,112 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 
 export default function Inputs() {
-  const [formData, setFormData] = useState({
-    total_project_members: 50,
-    total_project_stories: 50,
-    total_story_points: 50,
-    number_of_low_priority_stories: 50,
-    number_of_medium_priority_stories: 50,
-    number_of_high_priority_stories: 50,
-    number_of_stories_in_progress: 50,
-    number_of_stories_completed: 50,
-    number_of_stories_todo: 50,
-    number_of_stories_in_review: 50,
-    number_of_different_teams: 50,
-    number_of_testing_stories: 50,
-    estimated_project_duration_in_days: 50,
-    number_of_epics: 50,
-    average_seniority_level_per_engineer_in_years: 50,
-    average_time_of_story_completion_in_hours: 50,
-    average_time_of_stories_in_progress_in_hours: 50,
-  });
+  // Individual useState for each slider
+  const [total_project_members, setTotalProjectMembers] = useState(50);
+  const [total_project_stories, setTotalProjectStories] = useState(50);
+  const [total_story_points, setTotalStoryPoints] = useState(50);
+  const [number_of_low_priority_stories, setNumberOfLowPriorityStories] =
+    useState(50);
+  const [number_of_medium_priority_stories, setNumberOfMediumPriorityStories] =
+    useState(50);
+  const [number_of_high_priority_stories, setNumberOfHighPriorityStories] =
+    useState(50);
+  const [number_of_stories_in_progress, setNumberOfStoriesInProgress] =
+    useState(50);
+  const [number_of_stories_completed, setNumberOfStoriesCompleted] =
+    useState(50);
+  const [number_of_stories_todo, setNumberOfStoriesTodo] = useState(50);
+  const [number_of_stories_in_review, setNumberOfStoriesInReview] =
+    useState(50);
+  const [number_of_different_teams, setNumberOfDifferentTeams] = useState(50);
+  const [number_of_testing_stories, setNumberOfTestingStories] = useState(50);
+  const [
+    estimated_project_duration_in_days,
+    setEstimatedProjectDurationInDays,
+  ] = useState(50);
+  const [number_of_epics, setNumberOfEpics] = useState(50);
+  const [
+    average_seniority_level_per_engineer_in_years,
+    setAverageSeniorityLevelPerEngineerInYears,
+  ] = useState(50);
+  const [
+    average_time_of_story_completion_in_hours,
+    setAverageTimeOfStoryCompletionInHours,
+  ] = useState(50);
+  const [
+    average_time_of_stories_in_progress_in_hours,
+    setAverageTimeOfStoriesInProgressInHours,
+  ] = useState(50);
 
   const [editingValues, setEditingValues] = useState<Record<string, string>>(
     {}
   );
+
+  // State setters map
+  const stateSetters: Record<string, (value: number) => void> = {
+    total_project_members: setTotalProjectMembers,
+    total_project_stories: setTotalProjectStories,
+    total_story_points: setTotalStoryPoints,
+    number_of_low_priority_stories: setNumberOfLowPriorityStories,
+    number_of_medium_priority_stories: setNumberOfMediumPriorityStories,
+    number_of_high_priority_stories: setNumberOfHighPriorityStories,
+    number_of_stories_in_progress: setNumberOfStoriesInProgress,
+    number_of_stories_completed: setNumberOfStoriesCompleted,
+    number_of_stories_todo: setNumberOfStoriesTodo,
+    number_of_stories_in_review: setNumberOfStoriesInReview,
+    number_of_different_teams: setNumberOfDifferentTeams,
+    number_of_testing_stories: setNumberOfTestingStories,
+    estimated_project_duration_in_days: setEstimatedProjectDurationInDays,
+    number_of_epics: setNumberOfEpics,
+    average_seniority_level_per_engineer_in_years:
+      setAverageSeniorityLevelPerEngineerInYears,
+    average_time_of_story_completion_in_hours:
+      setAverageTimeOfStoryCompletionInHours,
+    average_time_of_stories_in_progress_in_hours:
+      setAverageTimeOfStoriesInProgressInHours,
+  };
+
+  // State values map
+  const stateValues: Record<string, number> = {
+    total_project_members,
+    total_project_stories,
+    total_story_points,
+    number_of_low_priority_stories,
+    number_of_medium_priority_stories,
+    number_of_high_priority_stories,
+    number_of_stories_in_progress,
+    number_of_stories_completed,
+    number_of_stories_todo,
+    number_of_stories_in_review,
+    number_of_different_teams,
+    number_of_testing_stories,
+    estimated_project_duration_in_days,
+    number_of_epics,
+    average_seniority_level_per_engineer_in_years,
+    average_time_of_story_completion_in_hours,
+    average_time_of_stories_in_progress_in_hours,
+  };
+
+  // Derived master object - automatically updates when any individual state changes
+  const allFormData = {
+    total_project_members,
+    total_project_stories,
+    total_story_points,
+    number_of_low_priority_stories,
+    number_of_medium_priority_stories,
+    number_of_high_priority_stories,
+    number_of_stories_in_progress,
+    number_of_stories_completed,
+    number_of_stories_todo,
+    number_of_stories_in_review,
+    number_of_different_teams,
+    number_of_testing_stories,
+    estimated_project_duration_in_days,
+    number_of_epics,
+    average_seniority_level_per_engineer_in_years,
+    average_time_of_story_completion_in_hours,
+    average_time_of_stories_in_progress_in_hours,
+  };
 
   // Linear conversion functions with step rounding
   const linearScale = (
@@ -64,7 +147,14 @@ export default function Inputs() {
   };
 
   const handleSliderChange = (field: string, value: number[]) => {
-    setFormData((prev) => ({ ...prev, [field]: value[0] }));
+    const newValue = value[0];
+
+    // Update individual state (allFormData will auto-update as derived state)
+    if (stateSetters[field]) {
+      stateSetters[field](newValue);
+    }
+
+    // Clear editing value
     setEditingValues((prev) => ({ ...prev, [field]: "" }));
   };
 
@@ -85,7 +175,11 @@ export default function Inputs() {
         const sliderPosition = logarithmic
           ? inverseLogScale(numValue, min, max)
           : inverseLinearScale(numValue, min, max);
-        setFormData((prev) => ({ ...prev, [field]: sliderPosition }));
+
+        // Update individual state (allFormData will auto-update as derived state)
+        if (stateSetters[field]) {
+          stateSetters[field](sliderPosition);
+        }
       }
     }
     setEditingValues((prev) => ({ ...prev, [field]: "" }));
@@ -306,7 +400,7 @@ export default function Inputs() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
               {sliderFields.map((field) => {
-                const value = formData[field.id as keyof typeof formData];
+                const value = stateValues[field.id];
                 const displayValue = field.logarithmic
                   ? logScale(value, field.min, field.max, field.step)
                   : linearScale(value, field.min, field.max, field.step);
@@ -376,6 +470,10 @@ export default function Inputs() {
               <div className="flex justify-center">
                 <Button
                   size="lg"
+                  onClick={() => {
+                    console.log("All Form Data:", allFormData);
+                    // TODO: Send to backend
+                  }}
                   className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold px-20 py-7 text-xl shadow-2xl hover:shadow-3xl transition-all rounded-xl"
                 >
                   Calculate Risk Score
